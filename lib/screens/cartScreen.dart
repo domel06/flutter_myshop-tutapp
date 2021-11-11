@@ -29,18 +29,18 @@ class CartScreen extends StatelessWidget {
                 Chip(
                   label: Text('\$${cartData.totalAmount}',
                       style: TextStyle(
-                        color: Theme.of(context).primaryTextTheme.title.color,
+                        color: Theme.of(context).primaryTextTheme.headline6.color,
                       )),
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: () {
                     Provider.of<Order>(context, listen: false).addOrder(
                         cartData.items.values.toList(), cartData.totalAmount);
                     cartData.clearCart();
                   },
-                  child: Text('Order Now'),
-                  textColor: Theme.of(context).primaryColor,
+                  child: Text('Order Now',style: TextStyle(color:Theme.of(context).primaryColor, ),),
+                   
                 )
               ],
             ),

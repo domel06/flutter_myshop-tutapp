@@ -5,6 +5,7 @@ import 'package:myshop/screens/cartScreen.dart';
 import 'package:myshop/screens/detailScreen.dart';
 import 'package:myshop/screens/order_screen.dart';
 import 'package:myshop/screens/product_overview_screen.dart';
+import 'package:myshop/screens/user_productScreen.dart';
 import './providers/products.dart';
 import 'package:provider/provider.dart'; //used to register the provider class to the widget
 
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
           DetailScreen.namedRoute : (ctx)=> DetailScreen(),
           CartScreen.routeName:(ctx)=>CartScreen(),
           OrderScreen.namedRoute:(ctx)=>OrderScreen(),
+          UserProductScreen.namedRoute:(ctx)=>UserProductScreen(),
         },),
     );
       
