@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:myshop/providers/products.dart';
 import '../providers/product.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const namedRoute = '/editProduct';
@@ -11,18 +14,48 @@ class EditProductScreen extends StatefulWidget {
 class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlController = TextEditingController();
   final _form = GlobalKey<FormState>();
+
+  var _isInit = true;
+  var _initValues = {
+    'title': '',
+    'description': '',
+    'price': '',
+    'imageUrl': ''
+  };
   var _editedProduct =
       Product(title: '', id: null, price: 0, description: '', imageUrl: '');
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context).settings.arguments as String;
+      if (productId != null) {
+        _editedProduct = Provider.of<Products>(context).findById(productId);
+        _initValues = {
+          'title': _editedProduct.title,
+          'description': _editedProduct.description,
+          'price': _editedProduct.price.toString(),
+          'imageUrl': '',
+        };
+        _imageUrlController.text = _editedProduct.imageUrl;
+      }
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
+
   void _saveForm() {
     final isValid = _form.currentState.validate();
     if (!isValid) {
       return;
     }
     _form.currentState.save();
-    print(_editedProduct.title);
-    print(_editedProduct.description);
-    print(_editedProduct.price);
-    print(_editedProduct.imageUrl);
+    if(_editedProduct.id != null){
+    Provider.of<Products>(context, listen: false).updateProduct(_editedProduct.id, _editedProduct);
+    }else{
+    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    }
+    
+    Navigator.of(context).pop();
   }
 
   @override
@@ -42,46 +75,72 @@ class _EditProductScreenState extends State<EditProductScreen> {
             children: <Widget>[
               TextFormField(
                 decoration: InputDecoration(labelText: 'Title'),
+                initialValue: _initValues['title'],
                 textInputAction: TextInputAction.next,
                 onSaved: (value) {
                   _editedProduct = Product(
                       title: value,
-                      id: null,
+                      id: _editedProduct.id,
                       price: _editedProduct.price,
                       description: _editedProduct.description,
-                      imageUrl: _editedProduct.imageUrl);
+                      imageUrl: _editedProduct.imageUrl,
+                      isFavourite: _editedProduct.isFavourite);
                 },
                 validator: (value) {
                   if (value.isEmpty) {
-                    return 'please this field is required';
+                    return 'title is required';
                   }
                   return null;
                 },
               ),
               TextFormField(
+                initialValue: _initValues['price'],
                 decoration: InputDecoration(labelText: 'Price'),
                 textInputAction: TextInputAction.next,
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   _editedProduct = Product(
                       title: _editedProduct.title,
-                      id: null,
+                      id: _editedProduct.id,
                       price: double.parse(value),
                       description: _editedProduct.description,
-                      imageUrl: _editedProduct.imageUrl);
+                      imageUrl: _editedProduct.imageUrl,
+                      isFavourite: _editedProduct.isFavourite);
+                },
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'price is required';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'enter the valid price';
+                  }
+                  if (double.parse(value) <= 0) {
+                    return 'the price must  be  greater than  0';
+                  }
+                  return null;
                 },
               ),
               TextFormField(
+                initialValue: _initValues['description'],
                 decoration: InputDecoration(labelText: 'Description'),
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'description is required';
+                  }
+                  if (value.length < 10) {
+                    return 'should bea at least 10 characters';
+                  }
+                },
                 onSaved: (value) {
                   _editedProduct = Product(
                       title: _editedProduct.title,
-                      id: null,
+                      id: _editedProduct.id,
                       price: _editedProduct.price,
                       description: value,
-                      imageUrl: _editedProduct.imageUrl);
+                      imageUrl: _editedProduct.imageUrl,
+                      isFavourite: _editedProduct.isFavourite);
                 },
               ),
               Row(
@@ -109,13 +168,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       onFieldSubmitted: (_) {
                         _saveForm();
                       },
+                      validator: (Value) {
+                        if (Value.isEmpty) {
+                          return 'imageUrl is required';
+                        }
+                        if (!Value.startsWith('http') &&
+                            !Value.startsWith('https')) {
+                          return 'enter the valid url.';
+                        }
+                        return null;
+                      },
                       onSaved: (value) {
                         _editedProduct = Product(
                             title: _editedProduct.title,
-                            id: null,
+                            id: _editedProduct.id,
                             price: _editedProduct.price,
                             description: _editedProduct.description,
-                            imageUrl: value);
+                            imageUrl: value,
+                            isFavourite: _editedProduct.isFavourite);
                       },
                     ),
                   )
